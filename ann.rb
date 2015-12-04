@@ -1,7 +1,7 @@
 require 'stopwords'
 require 'fast_stemmer'
 require 'narray'
-
+require 'webrick'
 
 class BagOfWords
   attr_reader :term_index, :doc_hashes, :doc_count, :doc_frequency
@@ -88,7 +88,7 @@ class BagOfWords
 
     def extract_terms doc
       doc.scrub!
-      terms = doc.downcase.gsub(/(\d|\s|\W)+/, ' ').strip.split(/\s/)
+      terms = doc.downcase.strip.split(/\s/)
       terms.reject! {|t| t.length < @opts[:min_term_length]} if @opts[:min_term_length]
       terms.map! {|t| t.stem} if @opts[:stem]
       terms
@@ -402,7 +402,7 @@ end
 
 bag = BagOfWords.new idf: true
 File.open("testing.txt").each do |line|
-  doc = line.chomp.to_s
+  doc = URI.decode(line.chomp.to_s)
   bag.add_doc doc
 end
 
