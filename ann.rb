@@ -400,6 +400,9 @@ module Scaler
 end
 
 
+
+## Option One, Need to get more info regarding this:
+
 # bag = BagOfWords.new idf: true
 # File.open("testing.txt").each do |line|
 #   doc = URI.decode(line.chomp.to_s)
@@ -416,6 +419,8 @@ end
 # puts data.inspect
 
 
+
+## Just Trying to make sense of how ANN is working with input data
 rows = File.readlines("testing.txt").map {|l| l.chomp.split(',') }
 
 rows.shuffle!
