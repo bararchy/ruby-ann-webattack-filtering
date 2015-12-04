@@ -374,6 +374,31 @@ class NeuralNet
     end
 end
 
+module Scaler
+  def self.mean data
+    data.mean(1)
+  end
+
+  def self.std data
+    std = data.stddev(1)
+    std[std.eq(0)] = 1.0 # so we don't divide by 0
+    std
+  end
+
+  def self.scale data, mean = nil, std = nil, typecode = nil
+    data = NArray.ref(data)
+    mean ||= self.mean(data)
+    std ||= self.std(data)
+    data = (data - mean) / std
+    [NMatrix.ref(data), mean, std]
+  end
+
+  def self.row_norms data
+    squared_data = NArray.ref(data)**2
+    NMatrix.ref(squared_data).sum(0)
+  end
+end
+
 
 bag = BagOfWords.new idf: true
 File.open("testing.txt").each do |line|
@@ -386,5 +411,6 @@ puts "BAG:"
 puts bag.inspect
 puts "Matrix:"
 puts data.inspect
-
-
+data = Scaler.scale data
+puts "Scaled"
+puts data.inspect
