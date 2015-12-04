@@ -403,27 +403,15 @@ end
 
 ## Option One, Need to get more info regarding this:
 
-# bag = BagOfWords.new idf: true
-# File.open("testing.txt").each do |line|
-#   doc = URI.decode(line.chomp.to_s)
-#   bag.add_doc doc
-# end
+bag = BagOfWords.new idf: true
+File.open("testing.txt").each do |line|
+  doc = URI.decode(line.split(",")[0].chomp.to_s)
+  bag.add_doc doc
+end
 
-# data = bag.to_matrix
-# puts "BAG:"
-# puts bag.inspect
-# puts "Matrix:"
-# puts data.inspect
-# data = Scaler.scale data
-# puts "Scaled"
-# puts data.inspect
+nn = NeuralNet.new [bag.terms_count, 50, 3]
 
-
-
-## Just Trying to make sense of how ANN is working with input data
 rows = File.readlines("testing.txt").map {|l| l.chomp.split(',') }
-
-rows.shuffle!
 
 label_encodings = {
   "Normal"     => [1, 0, 0],
@@ -431,22 +419,21 @@ label_encodings = {
   "XSS"  => [0, 0 ,1]
 }
 
-x_data = rows.map {|row| row[0,4].map }
-y_data = rows.map {|row| label_encodings[row[2]] }
+x_data = bag.to_a
+y_data = rows.map {|row| label_encodings[row[1]] }
 
 
-x_train = x_data.slice(0, 100)
-y_train = y_data.slice(0, 100)
+x_train = x_data.slice(0, 17)
+y_train = y_data.slice(0, 17)
 
-x_test = x_data.slice(100, 50)
-y_test = y_data.slice(100, 50)
+x_test = x_data.slice(17, 0)
+y_test = y_data.slice(17, 0)
 
 
-nn = NeuralNet.new [4,4,3]
 
 prediction_success = -> (actual, ideal) {
   predicted = (0..2).max_by {|i| actual[i] }
-  ideal[predicted] == 1 
+  ideal[predicted] == 1
 }
 
 mse = -> (actual, ideal) {
@@ -454,7 +441,7 @@ mse = -> (actual, ideal) {
   (errors.inject(0) {|sum, err| sum += err**2}) / errors.length.to_f
 }
 
-error_rate = -> (errors, total) { ((errors / total.to_f) * 100).round }
+error_rate = -> (errors, total) { ((errors / total.to_f) * 100) }
 
 run_test = -> (nn, inputs, expected_outputs) {
   success, failure, errsum = 0,0,0
@@ -491,5 +478,4 @@ success, failure, avg_mse = run_test.(nn, x_test, y_test)
 
 puts "Trained classification success: #{success}, failure: #{failure} (classification error: #{error_rate.(failure, x_test.length)}%, mse: #{(avg_mse * 100).round(2)}%)"
 
-    Status API Training Shop Blog About Pricing 
 
