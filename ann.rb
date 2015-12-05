@@ -426,8 +426,8 @@ y_data = rows.map {|row| label_encodings[row[1]] }
 x_train = x_data.slice(0, 17)
 y_train = y_data.slice(0, 17)
 
-x_test = x_data.slice(17, 0)
-y_test = y_data.slice(17, 0)
+x_test = x_train
+y_test = y_train
 
 
 
@@ -464,7 +464,7 @@ puts "\nTraining the network...\n\n"
 
 t1 = Time.now
 result = nn.train(x_train, y_train, error_threshold: 0.01, 
-                                    max_iterations: 1_000,
+                                    max_iterations: 1_000_000,
                                     log_every: 100
                                     )
 
