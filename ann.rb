@@ -412,11 +412,16 @@ File.open("sql_data_set.txt").each do |line|
   doc = URI.decode(line.split(",")[0].chomp.to_s)
   bag.add_doc doc
 end
+File.open("normal_data_set.txt").each do |line|
+  doc = (line.scrub.split(",")[0].chomp.to_s)
+  bag.add_doc doc
+end
 
 nn = NeuralNet.new [bag.terms_count, 50, 3]
 
 rows = File.readlines("testing.txt").map {|l| l.chomp.split(',') }
 rows = rows + File.readlines("sql_data_set.txt").map {|l| l.chomp.split(',') }
+rows = rows + File.readlines("normal_data_set.txt").map {|l| l.chomp.split(',') }
 
 rows.shuffle!
 
@@ -430,8 +435,8 @@ x_data = bag.to_a
 y_data = rows.map {|row| label_encodings[row[1]] }
 
 
-x_train = x_data.slice(0, 896)
-y_train = y_data.slice(0, 896)
+x_train = x_data.slice(0, rows.size)
+y_train = y_data.slice(0, rows.size)
 
 x_test = x_train
 y_test = y_train
