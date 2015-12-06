@@ -408,10 +408,17 @@ File.open("testing.txt").each do |line|
   doc = URI.decode(line.split(",")[0].chomp.to_s)
   bag.add_doc doc
 end
+File.open("sql_data_set.txt").each do |line|
+  doc = URI.decode(line.split(",")[0].chomp.to_s)
+  bag.add_doc doc
+end
 
 nn = NeuralNet.new [bag.terms_count, 50, 3]
 
 rows = File.readlines("testing.txt").map {|l| l.chomp.split(',') }
+rows = rows + File.readlines("sql_data_set.txt").map {|l| l.chomp.split(',') }
+
+rows.shuffle!
 
 label_encodings = {
   "Normal"     => [1, 0, 0],
@@ -423,8 +430,8 @@ x_data = bag.to_a
 y_data = rows.map {|row| label_encodings[row[1]] }
 
 
-x_train = x_data.slice(0, 17)
-y_train = y_data.slice(0, 17)
+x_train = x_data.slice(0, 896)
+y_train = y_data.slice(0, 896)
 
 x_test = x_train
 y_test = y_train
@@ -463,8 +470,8 @@ puts "Untrained classification success: #{success}, failure: #{failure} (classif
 puts "\nTraining the network...\n\n"
 
 t1 = Time.now
-result = nn.train(x_train, y_train, error_threshold: 0.01, 
-                                    max_iterations: 1_000_000,
+result = nn.train(x_train, y_train, error_threshold: 0.01,
+                                    max_iterations: 1_000,
                                     log_every: 100
                                     )
 
@@ -478,4 +485,15 @@ success, failure, avg_mse = run_test.(nn, x_test, y_test)
 
 puts "Trained classification success: #{success}, failure: #{failure} (classification error: #{error_rate.(failure, x_test.length)}%, mse: #{(avg_mse * 100).round(2)}%)"
 
+puts "Testing Single input"
 
+new_bag = BagOfWords.new idf: true
+new_bag.add_doc "index.html?id=12'OR 'a'='a' SELECT FROM DATA"
+
+xtrain = new_bag.to_a.slice(0,1)
+puts xtrain.inspect
+
+output = nn.run xtrain[0]
+puts output.inspect
+predicted = (0..2).max_by {|i| output[i] }
+puts predicted
