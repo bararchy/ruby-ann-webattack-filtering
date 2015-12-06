@@ -11,12 +11,7 @@ bag = BagOfWords.new idf: true # Initialize the bag
 
 
 # Load the files to the bag instance
-File.open("data/testing.txt").each do |line|
-  doc = URI.decode(line.split(",")[0].chomp.to_s)
-  bag.add_doc doc
-end
-
-File.open("data/sql_data_set.txt").each do |line|
+File.open("data/abnormal_data_set.txt").each do |line|
   doc = URI.decode(line.split(",")[0].chomp.to_s)
   bag.add_doc doc
 end
@@ -27,11 +22,10 @@ File.open("data/normal_data_set.txt").each do |line|
 end
 
 # Initialize the Neural Net, [input neurons, hidden neurons, output neurons]
-nn = NeuralNet.new [bag.terms_count, 50, 3]
+nn = NeuralNet.new [bag.terms_count, 50, 2]
 
 # Load all the files again to create the y_data object (labels and line numbers)
-rows = File.readlines("data/testing.txt").map {|l| l.chomp.split(',') }
-rows = rows + File.readlines("data/sql_data_set.txt").map {|l| l.chomp.split(',') }
+rows = File.readlines("data/abnormal_data_set.txt").map {|l| l.chomp.split(',') }
 rows = rows + File.readlines("data/normal_data_set.txt").map {|l| l.chomp.split(',') }
 
 # Suffle so it will no be ordered
@@ -40,8 +34,7 @@ rows.shuffle!
 # Set labels to understand the output options
 label_encodings = {
   "Normal"     => [1, 0, 0],
-  "SQLi" => [0, 1, 0],
-  "XSS"  => [0, 0 ,1]
+  "Abnormal" => [0, 1, 0]
 }
 
 x_data = bag.to_a
@@ -58,7 +51,7 @@ y_test = y_train
 
 
 prediction_success = -> (actual, ideal) {
-  predicted = (0..2).max_by {|i| actual[i] }
+  predicted = (0..1).max_by {|i| actual[i] }
   ideal[predicted] == 1
 }
 
