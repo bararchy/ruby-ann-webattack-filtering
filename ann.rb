@@ -11,12 +11,12 @@ bag = BagOfWords.new idf: true # Initialize the bag
 
 
 # Load the files to the bag instance
-File.open("data/abnormal_data_set.txt").each do |line|
-  doc = URI.decode(line.split(",")[0].chomp.to_s)
+File.open("data/abnormal_http_traffic.txt").each do |line|
+  doc = URI.decode(line.scrub.split(",")[0].chomp.to_s)
   bag.add_doc doc
 end
 
-File.open("data/normal_data_set.txt").each do |line|
+File.open("data/normal_http_traffic.txt").each do |line|
   doc = (line.scrub.split(",")[0].chomp.to_s)
   bag.add_doc doc
 end
@@ -25,8 +25,8 @@ end
 nn = NeuralNet.new [bag.terms_count, 50, 2]
 
 # Load all the files again to create the y_data object (labels and line numbers)
-rows = File.readlines("data/abnormal_data_set.txt").map {|l| l.chomp.split(',') }
-rows = rows + File.readlines("data/normal_data_set.txt").map {|l| l.chomp.split(',') }
+rows = File.readlines("data/abnormal_http_traffic.txt").map {|l| l.chomp.split(',') }
+rows = rows + File.readlines("data/normal_http_traffic.txt").map {|l| l.chomp.split(',') }
 
 # Suffle so it will no be ordered
 rows.shuffle!
@@ -48,6 +48,7 @@ y_train = y_data.slice(0, rows.size)
 x_test = x_train
 y_test = y_train
 
+puts "Data size: x = #{x_train.size} y = #{y_train.size}"
 
 
 prediction_success = -> (actual, ideal) {
@@ -85,10 +86,7 @@ puts ["Untrained classification success: ","#{success},".green, "failure: ","#{f
 puts "\nTraining the network...\n\n".bold
 
 t1 = Time.now
-result = nn.train(x_train, y_train, error_threshold: 0.01,
-                                    max_iterations: 1_000,
-                                    log_every: 1
-                                    )
+result = nn.train(x_train, y_train, error_threshold: 0.01, max_iterations: 1_000, log_every: 1)
 
 # puts result
 puts "\nDone training the network: #{result[:iterations]} iterations, #{(result[:error] * 100).round(2)}% mse, #{(Time.now - t1).round(1)}s"
@@ -110,5 +108,5 @@ puts xtrain.inspect
 
 output = nn.run xtrain[0]
 puts output.inspect
-predicted = (0..2).max_by {|i| output[i] }
+predicted = (0..1).max_by {|i| output[i] }
 puts predicted
