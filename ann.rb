@@ -22,13 +22,13 @@ File.open("data/normal_http_traffic.txt").each do |line|
 end
 
 # Initialize the Neural Net, [input neurons, hidden neurons, output neurons]
-# if File.exist?("/tmp/ann.db")
-#   puts "Loading saved NN from file".bold.green
-#   nn = Marshal.load(File.read("/tmp/ann.db"))
-# else
+if File.exist?("/tmp/ann.db")
+  puts "Loading saved NN from file".bold.green
+  nn = Marshal.load(File.read("/tmp/ann.db"))
+else
   puts "Initializing a new NN instance".bold.green
   nn = NeuralNet.new [bag.terms_count, 50, 2]
-# end
+end
 # Load all the files again to create the y_data object (labels and line numbers)
 rows = File.readlines("data/abnormal_http_traffic.txt").map {|l| l.chomp.split(',') }
 rows = rows + File.readlines("data/normal_http_traffic.txt").map {|l| l.chomp.split(',') }
@@ -47,7 +47,7 @@ shuffled = x_data.zip(y_data).shuffle
 x_data = shuffled.map {|row| row[0]}
 y_data = shuffled.map {|row| row[1]}
 
-test_set_size = 50
+test_set_size = 200
 training_set_size = rows.size - test_set_size
 
 x_train = x_data.slice(0, training_set_size)
