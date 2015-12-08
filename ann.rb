@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'stopwords'
 require 'fast_stemmer'
 require 'narray'
